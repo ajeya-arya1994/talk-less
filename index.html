@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Talk Less">
+<meta name="theme-color" content="#111827">
+<title>Talk Less</title>
+<style>
+:root{
+  --bg:#f5f7fb;--card:#fff;--text:#111827;--muted:#6b7280;--line:#e5e7eb;
+  --dark:#111827;--good:#e8f7ee;--goodtext:#166534;--bad:#fff1f2;--badtext:#9f1239;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}
+.app{max-width:560px;margin:auto;min-height:100vh;padding:calc(18px + env(safe-area-inset-top)) 16px calc(26px + env(safe-area-inset-bottom))}
+header{text-align:center;margin-bottom:14px}
+h1{font-size:24px;margin:0;font-weight:800;letter-spacing:.4px}
+.date{color:var(--muted);font-size:14px;margin-top:5px}
+.hero{background:var(--dark);color:#fff;border-radius:24px;padding:22px;text-align:center;box-shadow:0 8px 30px #11182718}
+.label{font-size:12px;letter-spacing:1.3px;font-weight:700;opacity:.7}
+.count{font-size:62px;font-weight:800;line-height:1.05;margin:6px 0 14px}
+.mainbtn{width:100%;border:0;border-radius:16px;padding:16px;background:#fff;color:#111827;font-size:17px;font-weight:800}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.cat{border:0;background:var(--card);border-radius:18px;padding:16px 12px;text-align:left;box-shadow:0 2px 10px #1118270b;min-height:92px}
+.cat .emoji{font-size:22px}.cat .name{display:block;font-weight:700;margin-top:7px}.cat .n{float:right;color:var(--muted);font-weight:800}
+.good{margin-top:12px;width:100%;border:0;border-radius:18px;padding:17px;background:var(--good);color:var(--goodtext);font-size:16px;font-weight:800}
+.actions{display:flex;gap:10px;margin:12px 0}
+.small{flex:1;border:1px solid var(--line);background:var(--card);border-radius:14px;padding:12px;font-weight:700;color:var(--text)}
+.card{background:var(--card);border-radius:20px;padding:17px;margin-top:12px;box-shadow:0 2px 10px #1118270b}
+.card h2{font-size:16px;margin:0 0 12px}
+.statrow{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+.statrow:last-child{border-bottom:0}
+.biggood{font-size:25px;font-weight:800;color:var(--goodtext)}
+.barwrap{height:9px;background:#edf0f4;border-radius:99px;overflow:hidden;margin-top:7px}
+.bar{height:100%;background:#111827;border-radius:99px}
+.note{font-size:12px;color:var(--muted);line-height:1.45;margin-top:9px}
+.history-day{padding:11px 0;border-bottom:1px solid var(--line)}
+.history-day:last-child{border-bottom:0}
+.history-top{display:flex;justify-content:space-between;font-weight:700;font-size:14px}
+.history-sub{font-size:12px;color:var(--muted);margin-top:4px}
+footer{text-align:center;color:var(--muted);font-size:11px;margin-top:18px}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);background:#111827;color:#fff;padding:11px 16px;border-radius:99px;font-size:13px;opacity:0;pointer-events:none;transition:.2s}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media (prefers-color-scheme:dark){
+ :root{--bg:#0b0f17;--card:#151b26;--text:#f3f4f6;--muted:#9ca3af;--line:#293140;--dark:#202938;--good:#123322;--goodtext:#86efac}
+ .mainbtn{background:#f3f4f6}.barwrap{background:#2a3240}.bar{background:#d1d5db}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<header><h1>TALK LESS</h1><div class="date" id="date"></div></header>
+
+<section class="hero">
+  <div class="label">TODAY'S UNNECESSARY TALK</div>
+  <div class="count" id="total">0</div>
+  <button class="mainbtn" onclick="add('tooLong')">+ UNNECESSARY TALK</button>
+</section>
+
+<div class="grid">
+ <button class="cat" onclick="add('tooLong')"><span class="emoji">🗣️</span><span class="n" id="tooLong">0</span><span class="name">Talked Too Long</span></button>
+ <button class="cat" onclick="add('repeated')"><span class="emoji">🔁</span><span class="n" id="repeated">0</span><span class="name">Repeated / Over-explained</span></button>
+ <button class="cat" onclick="add('interrupted')"><span class="emoji">✋</span><span class="n" id="interrupted">0</span><span class="name">Interrupted</span></button>
+ <button class="cat" onclick="add('shouldnt')"><span class="emoji">🤐</span><span class="n" id="shouldnt">0</span><span class="name">Shouldn't Have Said It</span></button>
+</div>
+
+<button class="good" onclick="add('stopped')">⭐ STOPPED MYSELF &nbsp; +1 &nbsp; (<span id="stopped">0</span>)</button>
+
+<div class="actions">
+ <button class="small" onclick="undo()">↶ Undo Last</button>
+ <button class="small" onclick="resetToday()">Reset Today</button>
+</div>
+
+<section class="card">
+ <h2>7-Day Snapshot</h2>
+ <div class="statrow"><span>Unnecessary talk</span><strong id="weekBad">0</strong></div>
+ <div class="statrow"><span>Stopped myself</span><strong class="biggood" id="weekGood">0</strong></div>
+ <div class="statrow"><span>Compared with previous 7 days</span><strong id="trend">—</strong></div>
+ <div class="note">Aim for awareness and improvement, not zero conversation. Lower unnecessary-talk counts over time are the useful signal.</div>
+</section>
+
+<section class="card">
+ <h2>Recent Days</h2>
+ <div id="history"></div>
+</section>
+
+<footer>Private by default • Data stays in this browser on this device</footer>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const KEYS=['tooLong','repeated','interrupted','shouldnt','stopped'];
+let db=JSON.parse(localStorage.getItem('talkLessDB')||'{}');
+let lastAction=null;
+
+function key(d=new Date()){
+ const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');
+ return `${y}-${m}-${day}`;
+}
+function empty(){return {tooLong:0,repeated:0,interrupted:0,shouldnt:0,stopped:0}}
+function today(){let k=key(); if(!db[k]) db[k]=empty(); return db[k]}
+function save(){localStorage.setItem('talkLessDB',JSON.stringify(db)); render()}
+function bad(x){return x.tooLong+x.repeated+x.interrupted+x.shouldnt}
+function add(type){
+ let k=key(); if(!db[k])db[k]=empty(); db[k][type]++;
+ lastAction={k,type}; save();
+ toast(type==='stopped'?'Nice — you caught yourself.':'Logged. Notice it, then move on.');
+ if(navigator.vibrate) navigator.vibrate(25);
+}
+function undo(){
+ if(!lastAction)return toast('Nothing to undo.');
+ let {k,type}=lastAction;
+ if(db[k]&&db[k][type]>0){db[k][type]--;lastAction=null;save();toast('Last entry undone.')}
+}
+function resetToday(){
+ if(confirm("Reset today's counters?")){
+   db[key()]=empty();lastAction=null;save();
+ }
+}
+function sumDays(startOffset,count){
+ let b=0,g=0;
+ for(let i=startOffset;i<startOffset+count;i++){
+   let d=new Date(); d.setDate(d.getDate()-i); let x=db[key(d)]||empty();
+   b+=bad(x);g+=x.stopped;
+ }
+ return {b,g};
+}
+function render(){
+ let x=today();
+ document.getElementById('date').textContent=new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});
+ document.getElementById('total').textContent=bad(x);
+ KEYS.forEach(k=>document.getElementById(k).textContent=x[k]);
+ let a=sumDays(0,7),p=sumDays(7,7);
+ weekBad.textContent=a.b; weekGood.textContent=a.g;
+ if(p.b===0) trend.textContent=a.b===0?'—':'No prior baseline';
+ else{
+   let pct=Math.round((a.b-p.b)/p.b*100);
+   trend.textContent=pct===0?'No change':`${Math.abs(pct)}% ${pct<0?'↓':'↑'}`;
+ }
+ let out='';
+ for(let i=0;i<7;i++){
+   let d=new Date();d.setDate(d.getDate()-i);let z=db[key(d)]||empty();
+   out+=`<div class="history-day"><div class="history-top"><span>${i===0?'Today':d.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}</span><span>${bad(z)} unnecessary</span></div><div class="history-sub">Stopped myself: ${z.stopped} · Too long: ${z.tooLong} · Repeated: ${z.repeated} · Interrupted: ${z.interrupted} · Shouldn't: ${z.shouldnt}</div></div>`;
+ }
+ history.innerHTML=out;
+}
+let timer;
+function toast(msg){let t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(timer);timer=setTimeout(()=>t.classList.remove('show'),1400)}
+render();
+</script>
+</body>
+</html>
